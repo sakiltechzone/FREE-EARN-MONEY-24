@@ -28,7 +28,7 @@
     
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     
-    .ip-warning { background-color: #ef4444; color: white; padding: 12px; border-radius: 12px; margin-bottom: 20px; text-align: center; display: none; font-weight: 600; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
+    /* Warning Style REMOVED completely */
 
     @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-150%); } }
     .animate-marquee { display: inline-block; white-space: nowrap; animation: marquee 25s linear infinite; padding-left: 10px; }
@@ -43,8 +43,6 @@
         <p class="text-xs text-gray-400">Loading App...</p>
     </div>
   </div>
-
-  <div id="ip-warning" class="ip-warning">⚠️ Warning: Multiple device detected!</div>
 
   <div id="timer-modal" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-6 backdrop-blur-md">
     <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-sm text-center border border-gray-800">
@@ -452,7 +450,7 @@
     const loader = document.getElementById('loader');
     const timerModal = document.getElementById('timer-modal');
     const countdownDisplay = document.getElementById('countdown-display');
-    const ipWarning = document.getElementById('ip-warning');
+    // REMOVED IP WARNING ELEMENT VARIABLE
 
     // Utility Functions
     async function getIPAddress() {
@@ -475,52 +473,27 @@
     function showLoader(s) { if(s) loader.classList.remove('hidden'); else loader.classList.add('hidden'); }
     function showAlert(m) { document.getElementById('alert-message').textContent = m; document.getElementById('custom-alert').classList.remove('hidden'); document.getElementById('alert-ok-btn').onclick = () => document.getElementById('custom-alert').classList.add('hidden'); }
 
-    // Logic
+    // Logic - NO VISUAL WARNING
     async function checkDeviceSecurity() {
       if(!userData) return true;
+      // Just update data quietly in background
       const userRef = doc(db, "users", currentUser.uid);
-      const userSnap = await getDoc(userRef);
-      if (userSnap.exists()) {
-        const user = userSnap.data();
-        if (user.registeredDevice && user.registeredDevice.deviceId) {
-          if (user.registeredDevice.deviceId !== deviceId) {
-            ipWarning.style.display = 'block';
-            showAlert("⚠️ Multiple device detected! Please use your registered device.");
-            return false;
-          }
-          if (user.registeredDevice.ip && user.registeredDevice.ip !== userIP) {
-            await updateDoc(userRef, { 'lastIPChange': serverTimestamp() });
-          }
-        } else {
+      try {
           await updateDoc(userRef, {
-            registeredDevice: { deviceId: deviceId, ip: userIP, registeredAt: serverTimestamp() }
+            registeredDevice: { deviceId: deviceId, ip: userIP, lastLogin: serverTimestamp() }
           });
-        }
-      }
-      return true;
+      } catch(e) { console.log("Silent dev update error", e); }
+      return true; // Always allow
     }
 
     async function checkActiveSession() {
-      const sessionsRef = collection(db, "active_sessions");
-      const q = query(sessionsRef, where("userId", "==", currentUser.uid));
-      const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) {
-        const session = querySnapshot.docs[0].data();
-        if (session.deviceId !== deviceId) {
-          try {
-            await setDoc(doc(db, "active_sessions", currentUser.uid), {
-                userId: currentUser.uid, deviceId: deviceId, ip: userIP, lastActive: serverTimestamp()
-            });
-          } catch(e) { console.log(e); }
-          return true;
-        }
-      }
+      // Overwrite session silently
       try {
         await setDoc(doc(db, "active_sessions", currentUser.uid), {
             userId: currentUser.uid, deviceId: deviceId, ip: userIP, lastActive: serverTimestamp()
         });
       } catch(e) { console.log(e); }
-      return true;
+      return true; 
     }
 
     async function cleanupSession() {
@@ -535,9 +508,7 @@
         currentUser = user;
         showLoader(true);
         setTimeout(async () => {
-            const sessionValid = await checkActiveSession();
-            if (!sessionValid) { showLoader(false); return; }
-            
+            await checkActiveSession();
             await fetchUserData();
             
             // Listeners
@@ -572,7 +543,7 @@
                 }
             });
 
-            await checkDeviceSecurity();
+            await checkDeviceSecurity(); // Silent
             updateUI();
             
             document.querySelectorAll('.main-page').forEach(p => p.classList.remove('active'));
@@ -786,7 +757,7 @@
     }
 
     window.handleWithdrawal = async function() {
-      if (userData.registeredDevice && userData.registeredDevice.deviceId !== deviceId) return showAlert("Withdrawal is only allowed from your registered device.");
+      // Security check removed from here too
       const amount = parseInt(document.getElementById('withdraw-amount').value);
       const number = document.getElementById('withdraw-number').value;
       if (!amount || !number) return showAlert("Please fill all fields");
@@ -856,7 +827,7 @@
     }
 
     async function validateTask() {
-      if (userData.registeredDevice && userData.registeredDevice.deviceId !== deviceId) { showAlert("Please use your registered device to complete tasks."); return false; }
+      // REMOVED DEVICE CHECK FOR TASKS
       const today = new Date().toISOString().split('T')[0];
       const currentCount = userData.lastAdWatchDate === today ? userData.dailyAdCount : 0;
       if (currentCount >= (appConfig.dailyAdLimit || 15)) { showAlert("আজকের কাজের লিমিট শেষ!"); return false; }
@@ -938,8 +909,7 @@
                 const userRef = doc(db, "users", res.user.uid);
                 const referralCode = Math.random().toString(36).substring(2, 8).toUpperCase();
                 await setDoc(userRef, {
-                  uid: res.user.uid, name: name, email: email, balance: 50, referralCode: referralCode, dailyAdCount: 0, lastAdWatchDate: new Date().toISOString().split('T')[0], registeredDevice: { deviceId: deviceId, ip: userIP, registeredAt: serverTimestamp() },
-                  referralBalance: 0, referralCount: 0
+                  uid: res.user.uid, name: name, email: email, balance: 50, referralCode: referralCode, dailyAdCount: 0, lastAdWatchDate: new Date().toISOString().split('T')[0], registeredDevice: { deviceId: deviceId, ip: userIP, registeredAt: serverTimestamp() }
                 });
               } catch (e) { 
                 if (e.code === 'auth/email-already-in-use') showAlert("এই ইমেইল ইতিমধ্যে ব্যবহার করা হয়েছে।");
