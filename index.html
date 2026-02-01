@@ -28,7 +28,7 @@
     
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     
-    /* Warning Style REMOVED completely */
+    .ip-warning { background-color: #ef4444; color: white; padding: 12px; border-radius: 12px; margin-bottom: 20px; text-align: center; display: none; font-weight: 600; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
 
     @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-150%); } }
     .animate-marquee { display: inline-block; white-space: nowrap; animation: marquee 25s linear infinite; padding-left: 10px; }
@@ -184,7 +184,7 @@
                 <div class="p-3 bg-orange-500/10 rounded-xl text-orange-500"><i data-lucide="play-circle" class="w-6 h-6"></i></div>
                 <div><h3 class="font-bold text-gray-100">Watch Video Ad</h3><p class="text-xs text-gray-500">Instant Reward</p></div>
               </div>
-              <button class="btn-anim bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow-lg shadow-orange-500/30" onclick="claimReward('interstitial')">Claim</button>
+              <button class="btn-anim bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow-lg shadow-orange-500/30" onclick="openTask('video')">Claim</button>
             </div>
 
             <div class="group relative overflow-hidden bg-[#161616] p-4 rounded-2xl border border-gray-800 flex items-center justify-between hover:border-red-500/30 transition-colors duration-300">
@@ -193,7 +193,7 @@
                 <div class="p-3 bg-red-500/10 rounded-xl text-red-500"><i data-lucide="youtube" class="w-6 h-6"></i></div>
                 <div><h3 class="font-bold text-gray-100">YouTube Task</h3><p class="text-xs text-gray-500">Subscribe Watch</p></div>
               </div>
-              <button class="btn-anim bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow-lg shadow-red-500/30" onclick="visitWebsite('https://sakiltechzone.blogspot.com', 20)">Claim</button>
+              <button class="btn-anim bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow-lg shadow-red-500/30" onclick="openTask('youtube')">Claim</button>
             </div>
 
             <div class="group relative overflow-hidden bg-[#161616] p-4 rounded-2xl border border-gray-800 flex items-center justify-between hover:border-blue-500/30 transition-colors duration-300">
@@ -202,7 +202,7 @@
                 <div class="p-3 bg-blue-500/10 rounded-xl text-blue-500"><i data-lucide="facebook" class="w-6 h-6"></i></div>
                 <div><h3 class="font-bold text-gray-100">Facebook Task</h3><p class="text-xs text-gray-500">Page Follow</p></div>
               </div>
-              <button class="btn-anim bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow-lg shadow-blue-500/30" onclick="visitWebsite('https://sakiltechzone.blogspot.com', 20)">Claim</button>
+              <button class="btn-anim bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow-lg shadow-blue-500/30" onclick="openTask('facebook')">Claim</button>
             </div>
 
             <div class="group relative overflow-hidden bg-[#161616] p-4 rounded-2xl border border-gray-800 flex items-center justify-between hover:border-pink-500/30 transition-colors duration-300">
@@ -211,7 +211,7 @@
                 <div class="p-3 bg-pink-500/10 rounded-xl text-pink-500"><i data-lucide="music-2" class="w-6 h-6"></i></div>
                 <div><h3 class="font-bold text-gray-100">TikTok Task</h3><p class="text-xs text-gray-500">Follow ID</p></div>
               </div>
-              <button class="btn-anim bg-gradient-to-r from-pink-500 to-fuchsia-600 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow-lg shadow-pink-500/30" onclick="visitWebsite('https://sakiltechzone.blogspot.com', 20)">Claim</button>
+              <button class="btn-anim bg-gradient-to-r from-pink-500 to-fuchsia-600 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow-lg shadow-pink-500/30" onclick="openTask('tiktok')">Claim</button>
             </div>
 
             <div class="group relative overflow-hidden bg-[#161616] p-4 rounded-2xl border border-gray-800 flex items-center justify-between hover:border-amber-500/30 transition-colors duration-300">
@@ -220,7 +220,7 @@
                 <div class="p-3 bg-amber-500/10 rounded-xl text-amber-400"><i data-lucide="mouse-pointer" class="w-6 h-6"></i></div>
                 <div><h3 class="font-bold text-gray-100">Special Task</h3><p class="text-xs text-gray-500">Wait 30 Seconds</p></div>
               </div>
-              <button class="btn-anim bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-bold px-6 py-2.5 rounded-xl text-sm shadow-lg shadow-amber-500/30" onclick="visitWebsite('https://performhouseholduneasy.com/bs8d1u99ty?key=a9cf6fe10795fdc635e6de8376d2c371', 30)">Start</button>
+              <button class="btn-anim bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-bold px-6 py-2.5 rounded-xl text-sm shadow-lg shadow-amber-500/30" onclick="openTask('special')">Start</button>
             </div>
 
             <div class="group relative overflow-hidden bg-[#161616] p-4 rounded-2xl border border-gray-800 flex items-center justify-between hover:border-emerald-500/30 transition-colors duration-300">
@@ -229,7 +229,7 @@
                 <div class="p-3 bg-emerald-500/10 rounded-xl text-emerald-400"><i data-lucide="gamepad-2" class="w-6 h-6"></i></div>
                 <div><h3 class="font-bold text-gray-100">Play Mini Game</h3><p class="text-xs text-gray-500">Big Reward!</p></div>
               </div>
-              <button class="btn-anim bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow-lg shadow-emerald-500/30" onclick="claimReward('miniApp')">Play</button>
+              <button class="btn-anim bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow-lg shadow-emerald-500/30" onclick="openTask('game')">Play</button>
             </div>
           </div>
         </section>
@@ -319,7 +319,7 @@
            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-indigo-500/30 blur-[60px] rounded-full animate-pulse"></div>
            <i data-lucide="gift" class="w-20 h-20 text-indigo-400 mx-auto relative z-10 mb-4 drop-shadow-[0_0_15px_rgba(129,140,248,0.5)]"></i>
            <h2 class="text-3xl font-black text-white relative z-10 mb-1">Invite Friends</h2>
-           <p class="text-indigo-200 text-sm relative z-10 font-medium">Earn <span class="text-yellow-400 font-bold text-lg">50 Coins</span> for every referral!</p>
+           <p class="text-indigo-200 text-sm relative z-10 font-medium">Earn <span class="text-yellow-400 font-bold text-lg" id="referral-reward-text">50 Coins</span> for every referral!</p>
         </div>
 
         <div class="grid grid-cols-2 gap-4 mt-2">
@@ -450,7 +450,6 @@
     const loader = document.getElementById('loader');
     const timerModal = document.getElementById('timer-modal');
     const countdownDisplay = document.getElementById('countdown-display');
-    // REMOVED IP WARNING ELEMENT VARIABLE
 
     // Utility Functions
     async function getIPAddress() {
@@ -473,21 +472,48 @@
     function showLoader(s) { if(s) loader.classList.remove('hidden'); else loader.classList.add('hidden'); }
     function showAlert(m) { document.getElementById('alert-message').textContent = m; document.getElementById('custom-alert').classList.remove('hidden'); document.getElementById('alert-ok-btn').onclick = () => document.getElementById('custom-alert').classList.add('hidden'); }
 
-    // Logic - NO VISUAL WARNING
+    // Dynamic Task Opener
+    window.openTask = function(type) {
+        if (!taskConfig || !appConfig) { showAlert("Loading data... Please wait."); return; }
+
+        let url = "";
+        let time = 20;
+        let reward = 0;
+
+        if (type === 'video') { 
+            // Monetag / Video Ad Special Case
+            claimReward('interstitial');
+            return;
+        }
+        else if (type === 'youtube') { url = taskConfig.ytLink; time = taskConfig.ytTimer || 20; reward = appConfig.rewardYoutube || 50; }
+        else if (type === 'facebook') { url = taskConfig.fbLink; time = taskConfig.fbTimer || 20; reward = appConfig.rewardFacebook || 50; }
+        else if (type === 'tiktok') { url = taskConfig.tkLink; time = taskConfig.tkTimer || 20; reward = appConfig.rewardTiktok || 50; }
+        else if (type === 'special') { url = taskConfig.spLink; time = taskConfig.spTimer || 30; reward = appConfig.rewardWebsite || 50; }
+        else if (type === 'game') { url = taskConfig.gameLink; time = 30; reward = appConfig.rewardGame || 100; } 
+
+        if (!url) { showAlert("Link not set by Admin."); return; }
+        
+        if (type === 'game') {
+             window.open(url, '_blank');
+             claimReward('miniApp'); // Special handler for game reward
+        } else {
+             visitWebsite(url, parseInt(time), parseInt(reward));
+        }
+    }
+
+    // Logic - RELAXED SECURITY (Fixes multiple device issue)
     async function checkDeviceSecurity() {
       if(!userData) return true;
-      // Just update data quietly in background
       const userRef = doc(db, "users", currentUser.uid);
       try {
           await updateDoc(userRef, {
             registeredDevice: { deviceId: deviceId, ip: userIP, lastLogin: serverTimestamp() }
           });
       } catch(e) { console.log("Silent dev update error", e); }
-      return true; // Always allow
+      return true;
     }
 
     async function checkActiveSession() {
-      // Overwrite session silently
       try {
         await setDoc(doc(db, "active_sessions", currentUser.uid), {
             userId: currentUser.uid, deviceId: deviceId, ip: userIP, lastActive: serverTimestamp()
@@ -596,6 +622,8 @@
       
       const claimBtn = document.getElementById('claim-refer-btn');
       const minReferClaim = appConfig.minReferralClaim || 500;
+      const referralReward = appConfig.rewardReferral || 50;
+      document.getElementById('referral-reward-text').textContent = `${referralReward} Coins`;
 
       if ((userData.referralBalance || 0) >= minReferClaim) {
           claimBtn.disabled = false;
@@ -757,7 +785,6 @@
     }
 
     window.handleWithdrawal = async function() {
-      // Security check removed from here too
       const amount = parseInt(document.getElementById('withdraw-amount').value);
       const number = document.getElementById('withdraw-number').value;
       if (!amount || !number) return showAlert("Please fill all fields");
@@ -834,7 +861,7 @@
       return true;
     }
 
-    window.visitWebsite = async function(url, seconds) {
+    window.visitWebsite = async function(url, seconds, reward) {
       if (!await validateTask()) return;
       window.open(url, '_blank');
       timerModal.classList.remove('hidden');
@@ -843,7 +870,7 @@
       const interval = setInterval(async () => {
         timeLeft--;
         countdownDisplay.textContent = timeLeft;
-        if (timeLeft <= 0) { clearInterval(interval); timerModal.classList.add('hidden'); await addReward(50); }
+        if (timeLeft <= 0) { clearInterval(interval); timerModal.classList.add('hidden'); await addReward(reward); }
       }, 1000);
     }
 
@@ -862,10 +889,15 @@
 
     window.claimReward = async (type) => {
       if (!await validateTask()) return;
-      if (type === 'dailyClick') return startTimerTask(30, 50);
+      
+      let reward = 50; 
+      if (type === 'video') reward = appConfig.rewardVideo || 50;
+      if (type === 'interstitial') reward = appConfig.rewardVideo || 50;
+      if (type === 'miniApp') reward = appConfig.rewardGame || 100;
+
       if (typeof window.show_10543110 === 'function') {
         showLoader(true);
-        try { await window.show_10543110(); await addReward(type === 'miniApp' ? 100 : 50); } catch (e) { showAlert("অ্যাড লোড করতে সমস্যা হচ্ছে।"); } finally { showLoader(false); }
+        try { await window.show_10543110(); await addReward(reward); } catch (e) { showAlert("অ্যাড লোড করতে সমস্যা হচ্ছে।"); } finally { showLoader(false); }
       } else { console.error("Monetag SDK not found."); showAlert("Ad not available."); }
     };
 
