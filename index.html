@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>SAKIL TECH ZONE</title>
 
   <script src='//libtl.com/sdk.js' data-zone='10543110' data-sdk='show_10543110'></script>
@@ -13,20 +13,20 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
-    body { font-family: 'Inter', sans-serif; background-color: #0f0f0f; color: #ffffff; }
+    body { font-family: 'Inter', sans-serif; background-color: #0f0f0f; color: #ffffff; -webkit-tap-highlight-color: transparent; }
     .dark-bg { background-color: #0f0f0f; }
-    .btn-anim { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .btn-anim { transition: transform 0.1s ease-in-out; }
     .btn-anim:active { transform: scale(0.95); }
     .input-field { background-color: #262626; border: 1px solid #404040; color: white; }
     
     .main-page { display: none; }
-    .main-page.active { display: flex; animation: fadeIn 0.4s ease-out; }
+    .main-page.active { display: flex; animation: fadeIn 0.3s ease-out; }
     .sub-page { display: none; }
     .sub-page.active { display: block; animation: fadeIn 0.3s ease-out; }
     
     .bottom-nav a.active { color: #ff8c00; }
     
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     
     .ip-warning { background-color: #ef4444; color: white; padding: 12px; border-radius: 12px; margin-bottom: 20px; text-align: center; display: none; font-weight: 600; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
 
@@ -35,10 +35,13 @@
   </style>
 </head>
 
-<body class="max-w-md mx-auto bg-[#0f0f0f] min-h-screen">
+<body class="max-w-md mx-auto bg-[#0f0f0f] min-h-screen select-none">
 
-  <div id="loader" class="hidden fixed inset-0 dark-bg bg-opacity-80 flex items-center justify-center z-50 backdrop-blur-sm">
-    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+  <div id="loader" class="fixed inset-0 dark-bg bg-opacity-90 flex items-center justify-center z-[9999] backdrop-blur-sm">
+    <div class="flex flex-col items-center">
+        <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500 mb-3"></div>
+        <p class="text-xs text-gray-400">Loading App...</p>
+    </div>
   </div>
 
   <div id="ip-warning" class="ip-warning">⚠️ Warning: Multiple device detected!</div>
@@ -51,7 +54,7 @@
     </div>
   </div>
 
-  <div id="auth-section" class="min-h-screen p-6 flex-col justify-center main-page active">
+  <div id="auth-section" class="min-h-screen p-6 flex-col justify-center main-page">
     <div class="text-center mb-10">
       <div class="w-20 h-20 bg-gradient-to-tr from-orange-500 to-red-600 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-orange-500/20">
         <i data-lucide="zap" class="w-10 h-10 text-white"></i>
@@ -469,11 +472,12 @@
       return deviceId;
     }
 
-    function showLoader(s) { loader.classList.toggle('hidden', !s); }
+    function showLoader(s) { if(s) loader.classList.remove('hidden'); else loader.classList.add('hidden'); }
     function showAlert(m) { document.getElementById('alert-message').textContent = m; document.getElementById('custom-alert').classList.remove('hidden'); document.getElementById('alert-ok-btn').onclick = () => document.getElementById('custom-alert').classList.add('hidden'); }
 
     // Logic
     async function checkDeviceSecurity() {
+      if(!userData) return true;
       const userRef = doc(db, "users", currentUser.uid);
       const userSnap = await getDoc(userRef);
       if (userSnap.exists()) {
@@ -503,15 +507,19 @@
       if (!querySnapshot.empty) {
         const session = querySnapshot.docs[0].data();
         if (session.deviceId !== deviceId) {
-          ipWarning.style.display = 'block';
-          showAlert("Another device is already logged in with this account.");
-          await signOut(auth);
-          return false;
+          try {
+            await setDoc(doc(db, "active_sessions", currentUser.uid), {
+                userId: currentUser.uid, deviceId: deviceId, ip: userIP, lastActive: serverTimestamp()
+            });
+          } catch(e) { console.log(e); }
+          return true;
         }
       }
-      await setDoc(doc(db, "active_sessions", currentUser.uid), {
-        userId: currentUser.uid, deviceId: deviceId, ip: userIP, lastActive: serverTimestamp()
-      });
+      try {
+        await setDoc(doc(db, "active_sessions", currentUser.uid), {
+            userId: currentUser.uid, deviceId: deviceId, ip: userIP, lastActive: serverTimestamp()
+        });
+      } catch(e) { console.log(e); }
       return true;
     }
 
@@ -526,50 +534,58 @@
       if (user) {
         currentUser = user;
         showLoader(true);
-        const sessionValid = await checkActiveSession();
-        if (!sessionValid) { showLoader(false); return; }
-        
-        await fetchUserData();
-        onSnapshot(doc(db, "config", "main"), (doc) => { if (doc.exists()) { appConfig = doc.data(); updateUI(); } });
-        onSnapshot(doc(db, "config", "tasks"), (doc) => { if (doc.exists()) { taskConfig = doc.data(); } });
-        onSnapshot(doc(db, "config", "payment_methods"), (doc) => { if(doc.exists()) adminPaymentMethods = doc.data(); });
-        onSnapshot(doc(db, "config", "support_info"), (doc) => {
-            if (doc.exists()) {
-                const data = doc.data();
-                const ensureProtocol = (url, type) => {
-                    if (!url) return "#";
-                    if (type === 'email') return `mailto:${url.replace('mailto:', '')}`;
-                    if (type === 'phone') return `tel:${url.replace('tel:', '')}`;
-                    if (!url.startsWith('http://') && !url.startsWith('https://')) return `https://${url}`;
-                    return url;
-                };
-                if(data.whatsapp) document.getElementById('link-whatsapp').href = ensureProtocol(data.whatsapp);
-                if(data.telegram) document.getElementById('link-telegram').href = ensureProtocol(data.telegram);
-                if(data.email) document.getElementById('link-email').href = ensureProtocol(data.email, 'email');
-                if(data.phone) document.getElementById('link-phone').href = ensureProtocol(data.phone, 'phone');
-            }
-        });
-        
-        const q = query(collection(db, "global_notifications"), orderBy("createdAt", "desc"), limit(1));
-        onSnapshot(q, (snapshot) => {
-            if (!snapshot.empty) {
-                const data = snapshot.docs[0].data();
-                const text = `${data.title}: ${data.body}`;
-                document.getElementById('notification-text').textContent = text;
-                document.getElementById('global-notification-bar').classList.remove('hidden');
-            }
-        });
+        setTimeout(async () => {
+            const sessionValid = await checkActiveSession();
+            if (!sessionValid) { showLoader(false); return; }
+            
+            await fetchUserData();
+            
+            // Listeners
+            onSnapshot(doc(db, "config", "main"), (doc) => { if (doc.exists()) { appConfig = doc.data(); updateUI(); } });
+            onSnapshot(doc(db, "config", "tasks"), (doc) => { if (doc.exists()) { taskConfig = doc.data(); } });
+            onSnapshot(doc(db, "config", "payment_methods"), (doc) => { if(doc.exists()) adminPaymentMethods = doc.data(); });
+            
+            onSnapshot(doc(db, "config", "support_info"), (doc) => {
+                if (doc.exists()) {
+                    const data = doc.data();
+                    const ensureProtocol = (url, type) => {
+                        if (!url) return "#";
+                        if (type === 'email') return `mailto:${url.replace('mailto:', '')}`;
+                        if (type === 'phone') return `tel:${url.replace('tel:', '')}`;
+                        if (!url.startsWith('http://') && !url.startsWith('https://')) return `https://${url}`;
+                        return url;
+                    };
+                    if(data.whatsapp) document.getElementById('link-whatsapp').href = ensureProtocol(data.whatsapp);
+                    if(data.telegram) document.getElementById('link-telegram').href = ensureProtocol(data.telegram);
+                    if(data.email) document.getElementById('link-email').href = ensureProtocol(data.email, 'email');
+                    if(data.phone) document.getElementById('link-phone').href = ensureProtocol(data.phone, 'phone');
+                }
+            });
+            
+            const q = query(collection(db, "global_notifications"), orderBy("createdAt", "desc"), limit(1));
+            onSnapshot(q, (snapshot) => {
+                if (!snapshot.empty) {
+                    const data = snapshot.docs[0].data();
+                    const text = `${data.title}: ${data.body}`;
+                    document.getElementById('notification-text').textContent = text;
+                    document.getElementById('global-notification-bar').classList.remove('hidden');
+                }
+            });
 
-        await checkDeviceSecurity();
-        updateUI();
-        document.querySelectorAll('.main-page').forEach(p => p.classList.remove('active'));
-        document.getElementById('app-container').classList.add('active');
-        navigateTo('home-page');
-        showLoader(false);
+            await checkDeviceSecurity();
+            updateUI();
+            
+            document.querySelectorAll('.main-page').forEach(p => p.classList.remove('active'));
+            document.getElementById('app-container').classList.add('active');
+            navigateTo('home-page');
+            showLoader(false);
+        }, 500);
       } else {
-        await cleanupSession();
+        if(currentUser) await cleanupSession();
+        currentUser = null;
         document.querySelectorAll('.main-page').forEach(p => p.classList.remove('active'));
         document.getElementById('auth-section').classList.add('active');
+        showLoader(false);
       }
     });
 
@@ -578,7 +594,6 @@
       const snap = await getDoc(userRef);
       if (snap.exists()) {
         userData = snap.data();
-        // Ensure new fields exist
         if (typeof userData.referralBalance === 'undefined') userData.referralBalance = 0;
         if (typeof userData.referralCount === 'undefined') userData.referralCount = 0;
       } else {
@@ -605,24 +620,19 @@
       document.getElementById('profile-email').textContent = userData.email;
       document.getElementById('referral-code').textContent = userData.referralCode;
       
-      // Update Refer Stats
       document.getElementById('refer-count').textContent = userData.referralCount || 0;
       document.getElementById('refer-earnings').textContent = (userData.referralBalance || 0).toFixed(2);
       
-      // Update Refer Claim Button
       const claimBtn = document.getElementById('claim-refer-btn');
-      // FIX: Use appConfig value instead of hardcoded 500
       const minReferClaim = appConfig.minReferralClaim || 500;
 
       if ((userData.referralBalance || 0) >= minReferClaim) {
           claimBtn.disabled = false;
           claimBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-          // Update text to show it's ready
           claimBtn.innerHTML = `<i data-lucide="download" class="w-5 h-5"></i> Claim to Main Balance`;
       } else {
           claimBtn.disabled = true;
           claimBtn.classList.add('opacity-50', 'cursor-not-allowed');
-          // Update text to show dynamic min amount
           claimBtn.innerHTML = `<i data-lucide="lock" class="w-4 h-4"></i> Claim to Main Balance (Min ${minReferClaim})`;
       }
 
@@ -643,7 +653,6 @@
       if(typeof lucide !== 'undefined') lucide.createIcons();
     }
 
-    // --- DAILY CHECK IN FUNCTION (CONNECTED TO ADMIN) ---
     window.handleDailyCheckIn = async function() {
         if(taskConfig && taskConfig.dailyLink) {
              window.open(taskConfig.dailyLink, '_blank');
@@ -657,7 +666,6 @@
 
         showLoader(true);
         try {
-            // Get reward from Admin Config (default 50)
             const reward = appConfig.rewardDaily || 50; 
             const newBalance = (userData.balance || 0) + reward;
 
@@ -666,7 +674,6 @@
                 lastCheckInDate: today
             });
 
-            // Local update for instant UI feedback
             userData.balance = newBalance;
             userData.lastCheckInDate = today;
             updateUI();
@@ -679,7 +686,6 @@
         showLoader(false);
     }
     
-    // --- REFERRAL CLAIM FUNCTION ---
     window.claimReferralEarnings = async function() {
         const minClaim = appConfig.minReferralClaim || 500;
         if ((userData.referralBalance || 0) < minClaim) {
@@ -717,11 +723,9 @@
       if(pageId === 'history-page') loadTransactionHistory();
     }
 
-    // --- ADSTERRA TASK (UPDATED WITH REWARD) ---
     window.openAdsterra = function() {
         if(taskConfig && taskConfig.adsterraId) {
             window.open(taskConfig.adsterraId, '_blank');
-            // Give reward after delay
             startTimerTask(30, appConfig.rewardDaily || 50); 
         } else {
             showAlert("Task link not set by admin yet.");
@@ -961,7 +965,14 @@
           };
       }
 
-      document.getElementById('logout-btn').onclick = async () => { await cleanupSession(); await signOut(auth); };
+      document.getElementById('logout-btn').onclick = async () => { 
+          showLoader(true);
+          try {
+            await cleanupSession(); 
+            await signOut(auth);
+          } catch(e) { console.log(e); }
+          showLoader(false);
+      };
       
       document.getElementById('show-signup').onclick = () => { document.getElementById('login-view').classList.add('hidden'); document.getElementById('signup-view').classList.remove('hidden'); };
       document.getElementById('show-login').onclick = () => { document.getElementById('signup-view').classList.add('hidden'); document.getElementById('login-view').classList.remove('hidden'); };
